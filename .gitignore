@@ -1,5 +1,4 @@
 node_modules/
-dist/
 tmp/
 caller_auth/
 *.log

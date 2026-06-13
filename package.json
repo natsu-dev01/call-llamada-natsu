@@ -13,12 +13,14 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "node dist/test.js",
-    "build": "tsc"
+    "prepare": "tsc",
+    "test": "node dist/test.js"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
-    "@types/node": "^20.0.0",
-    "@whiskeysockets/baileys": "7.0.0-rc13"
+    "@types/node": "^20.0.0"
+  },
+  "peerDependencies": {
+    "@whiskeysockets/baileys": "^7.0.0"
   }
 }
