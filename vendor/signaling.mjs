@@ -150,7 +150,40 @@ export class SignalingBridge {
         if (targets.length)
             await this.#ensureSignalSessions(targets, true);
     };
-    resolveLid = async (pnJid) => this.#sock.signalRepository.lidMapping?.getLIDForPN(pnJid);
+    resolveLid = async (pnJid) => {
+        const lid = await this.#sock.signalRepository.lidMapping?.getLIDForPN(pnJid);
+        if (lid) return lid;
+        const { getAllBinaryNodeChildren, getBinaryNodeChild, jidEncode } = this.#baileys;
+        const fullJid = this.#toBareJid(pnJid);
+        const iq = {
+            tag: 'iq',
+            attrs: { to: S_WHATSAPP_NET, type: 'get', xmlns: 'usync' },
+            content: [{
+                tag: 'usync',
+                attrs: {
+                    context: 'background', mode: 'query',
+                    sid: this.#sock.generateMessageTag?.() ?? '',
+                    last: 'true', index: '0',
+                },
+                content: [
+                    { tag: 'query', attrs: {}, content: [{ tag: 'lid', attrs: {} }] },
+                    { tag: 'list', attrs: {}, content: [{ tag: 'user', attrs: { jid: fullJid } }] },
+                ],
+            }],
+        };
+        try {
+            const result = await this.#sock.query(iq);
+            const usync = getBinaryNodeChild(result, 'usync');
+            const list = usync ? getBinaryNodeChild(usync, 'list') : null;
+            const users = list ? getAllBinaryNodeChildren(list) : [];
+            for (const user of users) {
+                const lidNode = getBinaryNodeChild(user, 'lid');
+                const val = lidNode?.attrs?.val;
+                if (val) return jidEncode(String(val), 'lid');
+            }
+        } catch {}
+        return null;
+    };
     issueTcToken = async (jid) => {
         const userJid = this.#toBareJid(jid);
         const issuedAt = Math.floor(Date.now() / 1000);

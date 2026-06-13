@@ -274,12 +274,10 @@ export class VoipClient {
         const targetPnJid = `${targetNumber}@s.whatsapp.net`;
         const durationMs = opts.durationMs ?? 120_000;
         const audioSource = opts.audioSource ?? "silence";
-        let peerLid = await this.#signaling.resolveLid(targetPnJid);
-        const isLidCall = !!peerLid;
-        if (!peerLid) {
-            peerLid = targetPnJid;
-        }
-        for (const jid of [...new Set([targetPnJid, peerLid])]) {
+        const peerLid = await this.#signaling.resolveLid(targetPnJid);
+        if (!peerLid)
+            throw new Error(`Could not resolve LID for ${targetPnJid}`);
+        for (const jid of [targetPnJid, peerLid]) {
             try {
                 await this.#sock.presenceSubscribe(jid);
             }
@@ -302,7 +300,7 @@ export class VoipClient {
             peerList: deviceList,
             callId,
             isVideo: false,
-            isLidCall,
+            isLidCall: true,
             isFromDialer: false,
             extraData: tcToken,
         });
