@@ -1,0 +1,24 @@
+{
+  "name": "call-llamada",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "WhatsApp voice call module — vendored baileys-caller, no external deps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node dist/test.js",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@whiskeysockets/baileys": "7.0.0-rc13"
+  }
+}
