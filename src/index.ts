@@ -146,12 +146,11 @@ export class WhatsAppCaller {
 // ── Helpers ──
 
 export async function downloadAudio(quoted: QuotedMsg): Promise<Buffer> {
-  const mimetype = quoted.msg?.mimetype;
-  if (!mimetype) throw new WhatsAppCallError('No audio content to download');
-  const stream = await downloadContentFromMessage(
-    { mimetype } as never,
-    'audio',
-  );
+  const msg = quoted.msg;
+  if (!msg?.mimetype?.startsWith('audio/')) {
+    throw new WhatsAppCallError('No audio content to download');
+  }
+  const stream = await downloadContentFromMessage(msg as never, 'audio');
   const chunks: Buffer[] = [];
   for await (const chunk of stream) {
     chunks.push(Buffer.from(chunk));
