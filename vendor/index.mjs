@@ -278,13 +278,37 @@ export class VoipClient {
             throw new Error("Not connected. Call connect() first.");
         if (this.#activeCall)
             throw new Error("A call is already active.");
-        const targetNumber = phoneNumber.replace(/\D/g, "");
-        const targetPnJid = `${targetNumber}@s.whatsapp.net`;
+        let targetNumber = phoneNumber.replace(/\D/g, "");
+        // Normalize common country-code formats for mobile numbers
+        const normalized = (() => {
+            const s = targetNumber;
+            if (!s) return s;
+            if (s.startsWith("52") && !s.startsWith("521") && s.length >= 12) return "521" + s.slice(2);
+            if (s.startsWith("54") && !s.startsWith("549") && s.length >= 11) return "549" + s.slice(2);
+            if (s.length === 10 && s.startsWith("3")) return "57" + s;
+            return s;
+        })();
+        // Try the normalized format first, then the raw input as fallback
+        const jidCandidates = [
+            `${normalized}@s.whatsapp.net`,
+        ];
+        if (normalized !== targetNumber) {
+            jidCandidates.push(`${targetNumber}@s.whatsapp.net`);
+        }
+        let peerLid = null;
+        let usedPnJid = jidCandidates[0];
+        for (const jid of jidCandidates) {
+            peerLid = await this.#signaling.resolveLid(jid);
+            if (peerLid) {
+                usedPnJid = jid;
+                break;
+            }
+        }
+        const targetPnJid = usedPnJid;
+        if (!peerLid)
+            throw new Error(`Could not resolve LID for ${phoneNumber} (tried: ${jidCandidates.join(", ")})`);
         const durationMs = opts.durationMs ?? 120_000;
         const audioSource = opts.audioSource ?? "silence";
-        const peerLid = await this.#signaling.resolveLid(targetPnJid);
-        if (!peerLid)
-            throw new Error(`Could not resolve LID for ${targetPnJid}`);
         for (const jid of [targetPnJid, peerLid]) {
             try {
                 await this.#sock.presenceSubscribe(jid);
