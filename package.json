@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "type": "module",
   "description": "WhatsApp voice call module by NatsuDev",
-  "repository": "github:natsu-dev01/call-llamada",
+  "repository": "github:natsu-dev01/call-llamada-natsu",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
