@@ -5,7 +5,7 @@
  * stanzas, decrypts inbound ones, manages TC tokens, multi-device JID routing,
  * and signal-session refresh.
  *
- * @author ShellTear
+ * @author NatsuDev
  */
 const S_WHATSAPP_NET = "@s.whatsapp.net";
 const TC_TOKEN_REQUEST_TIMEOUT_MS = 3500;

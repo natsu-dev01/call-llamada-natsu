@@ -1,5 +1,5 @@
 /**
- * baileys-caller — WhatsApp voice calling for Node.js.
+ * natsu-call — WhatsApp voice calling for Node.js.
  *
  * Wraps WhatsApp Web's official VoIP WASM stack and routes signaling through
  * Baileys. Public surface:
@@ -8,7 +8,7 @@
  *   await client.connect()
  *   const call = await client.call("12345678901", { audioSource: "./hi.mp3" })
  *
- * @author ShellTear
+ * @author NatsuDev
  */
 import { EventEmitter } from "node:events";
 import { WasmEngine } from "./wasm-engine.mjs";

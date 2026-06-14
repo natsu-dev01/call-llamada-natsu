@@ -1,9 +1,9 @@
-# call-llamada
+# call-llamada-natsu
 
 WhatsApp voice call module — wraps the official WhatsApp Web VoIP WASM stack for Node.js.
 
 ```ts
-import { WhatsAppCaller, downloadAudio, isAudioMessage } from 'call-llamada';
+import { WhatsAppCaller, downloadAudio, isAudioMessage } from 'call-llamada-natsu';
 
 const caller = new WhatsAppCaller({ sock, baileys });
 await caller.connect();
@@ -30,7 +30,7 @@ caller.disconnect();
 ## Install
 
 ```bash
-npm install call-llamada
+npm install call-llamada-natsu
 ```
 
 `baileys-natsu` must also be installed in your host project:

@@ -1,7 +1,7 @@
 /**
- * Shared type definitions for baileys-caller.
+ * Shared type definitions for natsu-call.
  *
- * @author ShellTear
+ * @author NatsuDev
  */
 /** Mirrors the WhatsApp WASM `CallState` enum. */
 export const CallState = {
