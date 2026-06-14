@@ -1,6 +1,6 @@
 {
   "name": "call-llamada",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "WhatsApp voice call module — vendored baileys-caller, no external deps",
   "main": "dist/index.js",
