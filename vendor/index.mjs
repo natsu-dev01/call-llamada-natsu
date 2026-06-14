@@ -8,7 +8,7 @@
  *   await client.connect()
  *   const call = await client.call("12345678901", { audioSource: "./hi.mp3" })
  *
- * @author Natsu
+ * @author NatsuDev
  */
 import { EventEmitter } from "node:events";
 import { randomBytes, createHmac } from "node:crypto";
@@ -191,11 +191,12 @@ export class VoipClient {
                 let opened = false;
                 let retries = 0;
                 const maxRetries = 5;
+                let uncaughtHandler = null;
                 const connectSocket = () => {
                     this.#sock = createSocket();
                     this.#sock.ev.on("creds.update", saveCreds);
-                    process.removeAllListeners("uncaughtException");
-                    process.on("uncaughtException", (err) => {
+                    if (uncaughtHandler) process.removeListener("uncaughtException", uncaughtHandler);
+                    uncaughtHandler = (err) => {
                         const code = err?.output?.statusCode ?? err?.data?.attrs?.code;
                         if ((code === 515 || code === "515") && !opened && retries < maxRetries) {
                             retries += 1;
@@ -204,7 +205,8 @@ export class VoipClient {
                         else if (!opened) {
                             rejectOpen(err);
                         }
-                    });
+                    };
+                    process.on("uncaughtException", uncaughtHandler);
                     this.#sock.ev.on("connection.update", (update) => {
                         if (update.qr) {
                             void import("qrcode-terminal")
@@ -216,7 +218,7 @@ export class VoipClient {
                         }
                         if (update.connection === "open") {
                             opened = true;
-                            process.removeAllListeners("uncaughtException");
+                            if (uncaughtHandler) process.removeListener("uncaughtException", uncaughtHandler);
                             resolveOpen();
                             return;
                         }
@@ -258,14 +260,18 @@ export class VoipClient {
         });
         await this.#engine.initialize();
         this.#signaling.attachEngine(this.#engine);
-        const selfPnJid = this.#sock.authState.creds.me?.id;
-        const selfLidJid = this.#sock.authState.creds.me?.lid;
+        const me = this.#sock.authState.creds?.me;
+        if (!me?.id) throw new Error("authState.creds.me is missing — not logged in?");
+        const selfPnJid = me.id;
+        const selfLidJid = me.lid;
         this.#engine.initVoipStack(selfPnJid, toBareJid(selfPnJid), selfLidJid);
         await this.#engine.waitForVoipStackReady();
         try {
             this.#engine.updateNetworkMedium(2, 0);
         }
-        catch { }
+        catch (err) {
+            console.error("[VoipClient] updateNetworkMedium error:", err);
+        }
         this.#onCallHandler = (node) => {
             if (this.#signaling) {
                 this.#signaling.processIncomingCall(node, this.#engine, this.#activeCall?.callId ?? "");
@@ -406,6 +412,9 @@ export class VoipClient {
         this.#captureFramesPerChunk = config.framesPerChunk || 320;
         const chunkSamples = this.#captureFramesPerChunk * this.#captureChannels;
         this.#captureChunkBytes = chunkSamples * Float32Array.BYTES_PER_ELEMENT;
+        if (this.#capturePtr) {
+            try { this.#engine.free(this.#capturePtr); } catch { }
+        }
         this.#capturePtr = this.#engine.malloc(this.#captureChunkBytes);
     };
     #handleAudioCaptureStart = () => {

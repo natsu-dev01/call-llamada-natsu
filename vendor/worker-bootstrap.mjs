@@ -6,7 +6,7 @@
  * `worker_threads` Worker. Function-keyword shims are intentional — the
  * loader inspects `.prototype` and `instanceof` on these.
  *
- * @author Natsu
+ * @author NatsuDev
  */
 "use strict";
 import { parentPort, workerData } from "worker_threads";
@@ -718,7 +718,11 @@ global.self.WhatsAppVoipWasmWorkerCompatibleCallbacks = {
     getBweModelPath: function () {
         return null;
     },
-    videoFrameConsumed: function () { },
+    videoFrameConsumed: function (ptr) {
+        if (ptr && getActiveWasmModule()) {
+            try { getActiveWasmModule()._free(ptr); } catch { }
+        }
+    },
     dataChannelStateCallback: function () { },
 };
 let wasmLoader = null;

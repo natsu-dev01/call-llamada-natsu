@@ -6,7 +6,7 @@ var _a;
  * spawns a 20-thread `worker_threads` pool to mirror the browser's pthread
  * model, and exposes a callback-based JS bridge. Audio-only (no video).
  *
- * @author Natsu
+ * @author NatsuDev
  */
 import * as vm from "node:vm";
 import * as fs from "node:fs";
@@ -555,7 +555,9 @@ export class WasmEngine {
             heapF32.set(data, index);
             this.#instance.onAudioDataFromJs(ptr, data.length);
         }
-        catch { }
+        catch (err) {
+            if (this.#config.debug) console.error("[WasmEngine] sendAudioData error:", err);
+        }
     };
     malloc = (size) => {
         this.#ensureInitialized();
@@ -605,6 +607,7 @@ export class WasmEngine {
         }
         if (!this.#audioPlaybackBuffer || this.#audioPlaybackBuffer <= 0)
             return;
+        const intervalMs = 16;
         this.#audioPlaybackLoopInterval = setInterval(() => {
             if (!this.#isPlaybackActive || !this.#instance || !this.#initialized) {
                 this.#stopAudioPlaybackLoop();
@@ -624,8 +627,10 @@ export class WasmEngine {
                 if (hasNonZero)
                     this.#config.callbacks?.onAudioPlaybackData?.(audioData);
             }
-            catch { }
-        }, 16);
+            catch (err) {
+                if (this.#config.debug) console.error("[WasmEngine] audio playback error:", err);
+            }
+        }, intervalMs).unref();
     };
     #stopAudioPlaybackLoop = () => {
         this.#isPlaybackActive = false;
@@ -637,7 +642,9 @@ export class WasmEngine {
             try {
                 this.#instance?._free?.(this.#audioPlaybackBuffer);
             }
-            catch { }
+            catch (err) {
+                if (this.#config.debug) console.error("[WasmEngine] free playback buffer error:", err);
+            }
             this.#audioPlaybackBuffer = null;
         }
     };
@@ -649,8 +656,12 @@ export class WasmEngine {
             : null;
         if (!setBool)
             return;
-        try { setBool("enable_webcodec_video_encode", true); } catch { }
-        try { setBool("enable_passthrough_video_decoder", true); } catch { }
+        try { setBool("enable_webcodec_video_encode", true); } catch (err) {
+            if (this.#config.debug) console.error("[WasmEngine] enableVideoAbProps error:", err);
+        }
+        try { setBool("enable_passthrough_video_decoder", true); } catch (err) {
+            if (this.#config.debug) console.error("[WasmEngine] enableVideoAbProps error:", err);
+        }
     };
     #applyDefaultAbProps = () => {
         if (!this.#instance)

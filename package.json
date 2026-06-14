@@ -2,7 +2,7 @@
   "name": "call-llamada-natsu",
   "version": "1.1.2",
   "type": "module",
-  "description": "WhatsApp voice call module by Natsu",
+  "description": "WhatsApp voice call module by NatsuDev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/natsu-dev01/call-llamada-natsu.git"

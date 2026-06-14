@@ -8,7 +8,7 @@
  *   await client.connect()
  *   const call = await client.call("12345678901", { audioSource: "./hi.mp3" })
  *
- * @author Natsu
+ * @author NatsuDev
  */
 import { EventEmitter } from "node:events";
 import { WasmEngine } from "./wasm-engine.mjs";

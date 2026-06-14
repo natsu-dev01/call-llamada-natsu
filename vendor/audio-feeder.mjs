@@ -4,7 +4,7 @@
  * Spawns ffmpeg to decode `source` into f32le PCM at the requested rate, then
  * meters frames out at chunk-cadence to the WASM uplink.
  *
- * @author Natsu
+ * @author NatsuDev
  */
 import { spawn } from "node:child_process";
 const LOW_WATERMARK_CHUNKS = 16;
@@ -105,6 +105,7 @@ export class AudioFeeder {
         if (this.#nextEmitAtMs === 0)
             this.#nextEmitAtMs = now;
         const delayMs = Math.max(0, this.#nextEmitAtMs - now);
+        const expectedEmit = this.#nextEmitAtMs;
         this.#emitTimer = setTimeout(() => {
             this.#emitTimer = null;
             if (this.#queue.length < LOW_WATERMARK_CHUNKS && Date.now() < this.#warmupUntilMs) {
@@ -113,7 +114,7 @@ export class AudioFeeder {
                 return;
             }
             this.#flushOne(chunkSamples);
-            this.#nextEmitAtMs += chunkIntervalMs;
+            this.#nextEmitAtMs = expectedEmit + chunkIntervalMs;
             this.#scheduleNext(chunkSamples, chunkIntervalMs);
         }, delayMs);
     };
@@ -124,7 +125,14 @@ export class AudioFeeder {
             this.underflowChunks += 1;
         }
         this.chunksEmitted += 1;
-        this.onChunk(nextChunk);
+        try {
+            this.onChunk(nextChunk);
+        }
+        catch (err) {
+            process.stderr.write("[AudioFeeder] onChunk error, stopping: " + (err?.message ?? err) + "\n");
+            this.stop();
+            return;
+        }
         if (this.#proc?.stdout.isPaused() && this.#queue.length <= MAX_QUEUED_CHUNKS / 4) {
             this.#proc.stdout.resume();
         }

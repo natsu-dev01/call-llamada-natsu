@@ -1,7 +1,7 @@
 /**
  * Shared type definitions for natsu-call.
  *
- * @author Natsu
+ * @author NatsuDev
  */
 /** Mirrors the WhatsApp WASM `CallState` enum. */
 export const CallState = {
