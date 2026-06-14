@@ -30,11 +30,14 @@ caller.disconnect();
 ## Install
 
 ```bash
-npm install
-npm run build
+npm install call-llamada
 ```
 
-`baileys-natsu` must be installed in your host project.
+`baileys-natsu` must also be installed in your host project:
+
+```bash
+npm install baileys-natsu
+```
 
 ## API
 
